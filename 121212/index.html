@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorpresa de Cumpleaños</title>
+    <style>
+        body {
+            background-color: #000; color: white; font-family: 'Arial Black', sans-serif;
+            margin: 0; overflow: hidden; height: 100vh;
+            display: flex; justify-content: center; align-items: center; perspective: 1000px;
+        }
+
+        #pantalla-inicio {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: black; display: flex; justify-content: center; align-items: center;
+            z-index: 100; transition: opacity 0.8s;
+        }
+
+        .boton-empezar {
+            padding: 15px 30px; font-size: 1.2em; color: white; background: none;
+            border: 2px solid #ff0055; border-radius: 50px; cursor: pointer;
+            text-transform: uppercase; box-shadow: 0 0 20px #ff0055; transition: 0.3s;
+        }
+
+        @keyframes brilloNeon {
+            0%, 100% { opacity: 0.4; filter: brightness(1); }
+            50% { opacity: 1; filter: brightness(1.5); transform: scale(1.05); }
+        }
+
+        .cumple-neon {
+            position: absolute; text-transform: uppercase; z-index: -1; 
+            white-space: nowrap; font-weight: bold; opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .contenido-central {
+            background: rgba(0, 0, 0, 0.9); padding: 25px; border: 2px solid #fff;
+            border-radius: 25px; text-align: center; z-index: 10;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.2); 
+            width: 320px; min-height: 220px;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 1s ease;
+        }
+
+        #texto-principal { 
+            font-size: 1.5em; color: #fff; text-transform: uppercase;
+            letter-spacing: 2px; text-shadow: 0 0 10px #fff, 0 0 20px #ff0055;
+            margin-bottom: 10px;
+        }
+
+        #texto-dinamico {
+            font-size: 0.95em; color: #00f2ff; line-height: 1.5;
+            text-shadow: 0 0 8px #00f2ff; font-family: sans-serif;
+            font-weight: bold; min-height: 80px;
+        }
+
+        #btn-siguiente-estrofa {
+            display: none; margin-top: 15px; background: #ccff00; border: none;
+            color: #000; padding: 10px 20px; border-radius: 20px; cursor: pointer;
+            font-size: 0.8em; font-weight: bold; text-transform: uppercase;
+            box-shadow: 0 0 15px #ccff00; transition: 0.3s;
+        }
+
+        #contenedor-video-final {
+            position: absolute; width: 320px; height: 220px;
+            display: none; z-index: 11; opacity: 0; transition: opacity 1.5s ease;
+        }
+
+        #video-final {
+            width: 100%; height: 100%; object-fit: cover;
+            border-radius: 25px; border: 2px solid #ccff00;
+            box-shadow: 0 0 30px #ccff00;
+        }
+
+        .btn-flecha {
+            display: none; width: 45px; height: 45px; line-height: 45px;
+            background: #ccff00; color: black; border: none; border-radius: 50%; 
+            font-size: 1.3em; cursor: pointer; box-shadow: 0 0 20px #ccff00;
+            animation: pulse 1.5s infinite; margin-top: 15px;
+        }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+        .revelar { position: absolute; z-index: 5; opacity: 0; transform: scale(0.5); transition: 1s; cursor: pointer; }
+        
+        .top-left { top: 10px; left: 10px; } .top-right { top: 10px; right: 10px; }
+        .bottom-left { bottom: 10px; left: 10px; } .bottom-right { bottom: 10px; right: 10px; }
+        .mid-left { top: 50%; left: 10px; transform: translateY(-50%) scale(0.5); }
+        .mid-right { top: 50%; right: 10px; transform: translateY(-50%) scale(0.5); }
+        .inter-izq { top: 25%; left: 140px; } .inter-der { top: 25%; right: 140px; }
+        .posicion-blanca { bottom: 25%; left: 140px; }
+        .posicion-blanca-der { bottom: 25%; right: 140px; }
+
+        .fila-horizontal { position: absolute; width: 60%; display: flex; justify-content: space-around; z-index: 5; }
+        .fila-top { top: 10px; } .fila-bottom { bottom: 10px; }
+
+        video, img.foto-extra {
+            width: 100px; height: 120px; object-fit: cover;
+            border: 2px solid #fff; border-radius: 10px;
+        }
+
+        /* LIGHTBOX TOTALMENTE TRANSPARENTE */
+        #lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: none; /* FONDO ELIMINADO TOTALMENTE */
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000;
+            cursor: zoom-out;
+        }
+
+        #lightbox-media-container {
+            display: flex; justify-content: center; align-items: center;
+            background: transparent;
+        }
+
+        .media-foto {
+            width: 60vw; height: 60vh; max-width: 100%; max-height: 100%;
+            border: 3px solid #fff; border-radius: 20px;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.4);
+            object-fit: contain; background: black; 
+        }
+
+        .media-video {
+            width: 75vw; height: 75vh; max-width: 100%; max-height: 100%;
+            border: 3px solid #fff; border-radius: 20px;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.4);
+            object-fit: contain; background: black;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="musica-fondo" src="cancion.mp3" loop></audio>
+
+    <div id="pantalla-inicio">
+        <button class="boton-empezar" onclick="acto1()">🥳🥳🥳Tocame🥳🥳🥳</button>
+    </div>
+
+    <div class="contenido-central" id="centro">
+        <div id="texto-principal"></div>
+        <div id="texto-dinamico"></div>
+        <button id="btn-siguiente-estrofa" onclick="avanzarEstrofa()">Siguiente ➔</button>
+        <button class="btn-flecha" id="flecha" onclick="actoFinal()">➔</button>
+    </div>
+
+    <div id="contenedor-video-final">
+        <video id="video-final" src="video-final.mp4" loop muted></video>
+    </div>
+
+    <!-- EL VISUALIZADOR YA NO TIENE COLOR DE FONDO -->
+    <div id="lightbox" onclick="cerrarLightbox()">
+        <div id="lightbox-media-container"></div>
+    </div>
+
+    <!-- MULTIMEDIA -->
+    <div class="revelar top-left" onclick="agrandar(this)"><img src="foto4.jpg" class="foto-extra"></div>
+    <div class="revelar mid-left" onclick="agrandar(this)"><video src="video2.mp4" loop muted></video></div>
+    <div class="revelar bottom-left" onclick="agrandar(this)"><img src="foto1.jpg" class="foto-extra"></div>
+    <div class="revelar inter-izq" onclick="agrandar(this)"><video src="video5.mp4" loop muted style="transform: rotate(-90deg)"></video></div>
+    <div class="revelar posicion-blanca" onclick="agrandar(this)"><video src="video7.mp4" loop muted></video></div>
+    <div class="revelar posicion-blanca-der" onclick="agrandar(this)"><img src="foto9.jpg" class="foto-extra"></div>
+    <div class="revelar inter-der" onclick="agrandar(this)"><img src="foto2.jpg" class="foto-extra"></div>
+    <div class="revelar top-right" onclick="agrandar(this)"><video src="video3.mp4" loop muted style="transform: rotate(90deg)"></video></div>
+    <div class="revelar mid-right" onclick="agrandar(this)"><img src="foto7.jpg" class="foto-extra"></div>
+    <div class="revelar bottom-right" onclick="agrandar(this)"><video src="video6.mp4" loop muted></video></div>
+
+    <div class="fila-horizontal fila-top">
+        <div class="revelar" onclick="agrandar(this)" style="position: relative;"><img src="foto3.jpg" class="foto-extra"></div>
+        <div class="revelar" onclick="agrandar(this)" style="position: relative;"><video src="video1.mp4" loop muted style="transform: rotate(90deg)"></video></div>
+        <div class="revelar" onclick="agrandar(this)" style="position: relative;"><img src="foto5.jpg" class="foto-extra"></div>
+    </div>
+    <div class="fila-horizontal fila-bottom">
+        <div class="revelar" onclick="agrandar(this)" style="position: relative;"><video src="video4.mp4" loop muted style="transform: rotate(90deg)"></video></div>
+        <div class="revelar" onclick="agrandar(this)" style="position: relative;"><img src="foto6.jpg" class="foto-extra"></div>
+        <div class="revelar" onclick="agrandar(this)" style="position: relative;"><img src="foto8.jpg" class="foto-extra"></div>
+    </div>
+
+    <script>
+        let estrofaActual = 0;
+        const frases = [
+            "🎁Hoy es un día especial🥳\nA pesar de que estoy lejos de ti🥺 y que nos separa la distancia🚀 No es excusa para que no felicitarte🥰",
+            "Espero que este nuevo año🤗 este lleno de alegría, amor y momentos inolvidables✨ Recuerda siempre sonreír😁 rodearte de quienes te quieren❣️",
+            "Nunca dejes de soñar💭que tus metas se te hagan realidad🤩 te mereces lo mejor hoy y siempre🥰",
+            "Disfruta tu día al máximo🥳 celebra cada instante❣️y que todos tus deseos se hagan realidad🥰"
+        ];
+
+        function acto1() {
+            const musica = document.getElementById('musica-fondo');
+            musica.play().catch(e => console.log("Música iniciada"));
+            document.getElementById('pantalla-inicio').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('pantalla-inicio').style.display = 'none';
+                aparecerFrasesNeon();
+            }, 800);
+        }
+
+        function aparecerFrasesNeon() {
+            const filas = 10, columnas = 8;
+            const colores = ['#ff0055', '#bc13fe', '#ff0000', '#00f2ff'];
+            let frasesFondo = [];
+            for (let i = 0; i < filas; i++) {
+                for (let j = 0; j < columnas; j++) {
+                    let f = document.createElement('div');
+                    f.className = 'cumple-neon';
+                    f.innerText = 'Feliz Cumpleaños';
+                    const col = colores[Math.floor(Math.random() * colores.length)];
+                    f.style.top = (i * (100 / filas)) + (Math.random() * 5) + 'vh';
+                    f.style.left = (j * (100 / columnas)) + (Math.random() * 5) + 'vw';
+                    f.style.color = col;
+                    f.style.fontSize = (8 + Math.random() * 8) + 'px';
+                    f.style.textShadow = `0 0 5px ${col}`;
+                    document.body.appendChild(f);
+                    frasesFondo.push(f);
+                }
+            }
+            frasesFondo.sort(() => Math.random() - 0.5);
+            frasesFondo.forEach((f, index) => {
+                setTimeout(() => {
+                    f.style.opacity = '0.7';
+                    f.style.animation = `brilloNeon ${2 + Math.random() * 2}s infinite ease-in-out`;
+                    if(index === frasesFondo.length - 1) setTimeout(acto2, 1000);
+                }, index * 25);
+            });
+        }
+
+        function acto2() {
+            const centro = document.getElementById('centro');
+            centro.style.display = 'flex';
+            setTimeout(() => { centro.style.opacity = '1'; }, 100);
+            setTimeout(() => {
+                escribirLetraPorLetra("Feliz Cumpleaños", "texto-principal", 150, () => {
+                    document.getElementById('flecha').style.display = 'inline-block';
+                });
+            }, 1600);
+        }
+
+        function escribirLetraPorLetra(texto, elementoId, velocidad, callback) {
+            const el = document.getElementById(elementoId);
+            el.innerHTML = "";
+            let i = 0;
+            function escribir() {
+                if (i < texto.length) {
+                    el.innerHTML += texto.charAt(i) === "\n" ? "<br>" : texto.charAt(i);
+                    i++;
+                    setTimeout(escribir, velocidad);
+                } else if (callback) { callback(); }
+            }
+            escribir();
+        }
+
+        function actoFinal() {
+            document.getElementById('flecha').style.display = 'none';
+            escribirEstrofa();
+            let elementos = Array.from(document.querySelectorAll('.revelar'));
+            elementos.sort(() => Math.random() - 0.5);
+            elementos.forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    if (el.className.includes('mid-')) {
+                        el.style.transform = 'translateY(-50%) scale(1)';
+                    } else {
+                        el.style.transform = 'scale(1)';
+                    }
+                    let v = el.querySelector('video'); if(v) v.play();
+                }, index * 250);
+            });
+        }
+
+        function escribirEstrofa() {
+            document.getElementById('btn-siguiente-estrofa').style.display = 'none';
+            escribirLetraPorLetra(frases[estrofaActual], "texto-dinamico", 50, () => {
+                const btn = document.getElementById('btn-siguiente-estrofa');
+                btn.innerText = estrofaActual < frases.length - 1 ? "Siguiente ➔" : "Un regalo para ti 🎁";
+                btn.style.display = 'inline-block';
+            });
+        }
+
+        function avanzarEstrofa() {
+            if (estrofaActual < frases.length - 1) {
+                estrofaActual++;
+                escribirEstrofa();
+            } else {
+                mostrarVideoFinal();
+            }
+        }
+
+        function mostrarVideoFinal() {
+            const centro = document.getElementById('centro');
+            const contenedorVideo = document.getElementById('contenedor-video-final');
+            const videoF = document.getElementById('video-final');
+            centro.style.opacity = '0';
+            setTimeout(() => {
+                centro.style.display = 'none';
+                contenedorVideo.style.display = 'block';
+                setTimeout(() => {
+                    contenedorVideo.style.opacity = '1';
+                    videoF.play();
+                    videoF.muted = true; 
+                }, 100);
+            }, 1000);
+        }
+
+        function agrandar(div) {
+            const lb = document.getElementById('lightbox');
+            const container = document.getElementById('lightbox-media-container');
+            const original = div.querySelector('img, video');
+            
+            let clon;
+            if (original.tagName === 'IMG') {
+                clon = document.createElement('img');
+                clon.src = original.src;
+                clon.className = 'media-foto';
+            } else {
+                clon = document.createElement('video');
+                clon.src = original.src;
+                clon.controls = true;
+                clon.autoplay = true;
+                clon.muted = true;
+                clon.className = 'media-video';
+            }
+            
+            container.innerHTML = '';
+            container.appendChild(clon);
+            lb.style.display = 'flex';
+        }
+
+        function cerrarLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+            document.getElementById('lightbox-media-container').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
+
